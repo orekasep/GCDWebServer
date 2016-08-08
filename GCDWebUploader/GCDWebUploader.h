@@ -38,6 +38,11 @@
 @optional
 
 /**
+ *  This method is called whenever a file has been prepared to download.
+ */
+- (void)webUploader:(GCDWebUploader*)uploader willDownloadFile:(NSString*)filename;
+
+/**
  *  This method is called whenever a file has been downloaded.
  */
 - (void)webUploader:(GCDWebUploader*)uploader didDownloadFileAtPath:(NSString*)path;
