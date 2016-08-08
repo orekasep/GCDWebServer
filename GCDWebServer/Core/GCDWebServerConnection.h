@@ -84,6 +84,12 @@
 @property(nonatomic, readonly) NSUInteger totalBytesRead;
 
 /**
+ *  Returns the total number of bytes from remote header (i.e. client)
+ *  so far.
+ */
+@property(nonatomic, readonly) NSUInteger totalBytes;
+
+/**
  *  Returns the total number of bytes sent to the remote peer (i.e. client) so far.
  */
 @property(nonatomic, readonly) NSUInteger totalBytesWritten;

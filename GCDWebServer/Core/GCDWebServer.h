@@ -280,7 +280,7 @@ extern NSString* const GCDWebServerAuthenticationMethod_DigestAccess;
 /**
  *  This method is called after the server has successfully started.
  */
-- (void)webServerDidReadBytes:(GCDWebServer*)server bytes:(NSUInteger)bytesRead;
+- (void)webServerDidReadBytes:(GCDWebServer*)server bytes:(NSUInteger)bytesRead total:(NSUInteger)totalBytes;
 
 @end
 
@@ -455,7 +455,7 @@ extern NSString* const GCDWebServerAuthenticationMethod_DigestAccess;
  * The total bytes read when server received data.
  * This will be very handy to calculate the progress while uploading
  */
-- (void)didReadBytes: (NSUInteger)bytesRead;
+- (void)didReadBytes: (NSUInteger)bytesRead total:(NSUInteger)totalBytes;
 
 
 @end

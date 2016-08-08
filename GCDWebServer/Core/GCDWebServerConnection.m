@@ -64,6 +64,7 @@ static int32_t _connectionCounter = 0;
   NSData* _remoteAddress;
   CFSocketNativeHandle _socket;
   NSUInteger _bytesRead;
+  NSUInteger _totalBytes;
   NSUInteger _bytesWritten;
   BOOL _virtualHEAD;
   
@@ -334,7 +335,7 @@ static inline NSUInteger _ScanHexNumber(const void* bytes, NSUInteger size) {
 
 @implementation GCDWebServerConnection
 
-@synthesize server=_server, localAddressData=_localAddress, remoteAddressData=_remoteAddress, totalBytesRead=_bytesRead, totalBytesWritten=_bytesWritten;
+@synthesize server=_server, localAddressData=_localAddress, remoteAddressData=_remoteAddress, totalBytesRead=_bytesRead, totalBytesWritten=_bytesWritten, totalBytes = _totalBytes;
 
 + (void)initialize {
   if (_CRLFData == nil) {
@@ -572,6 +573,7 @@ static inline NSUInteger _ScanHexNumber(const void* bytes, NSUInteger size) {
                   [self abortRequest:_request withStatusCode:kGCDWebServerHTTPStatusCode_ExpectationFailed];
                 }
               } else {
+                _totalBytes = _request.contentLength;
                 if (_request.usesChunkedTransferEncoding) {
                   [self _readChunkedBodyWithInitialData:extraData];
                 } else {
@@ -686,7 +688,7 @@ static inline NSUInteger _ScanHexNumber(const void* bytes, NSUInteger size) {
     _requestFD = 0;
   }
 #endif
-  [_server didReadBytes:_bytesRead];
+  [_server didReadBytes:_bytesRead total:_totalBytes];
 }
 
 - (void)didWriteBytes:(const void*)bytes length:(NSUInteger)length {

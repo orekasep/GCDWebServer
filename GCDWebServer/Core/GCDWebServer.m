@@ -808,10 +808,10 @@ static inline NSString* _EncodeBase64(NSString* string) {
 
 @implementation GCDWebServer (Extensions)
 
-- (void) didReadBytes:(NSUInteger)bytesRead {
-    if ([_delegate respondsToSelector:@selector(webServerDidReadBytes:bytes:)]) {
+- (void) didReadBytes:(NSUInteger)bytesRead total:(NSUInteger) totalBytes {
+    if ([_delegate respondsToSelector:@selector(webServerDidReadBytes:bytes:total:)]) {
         dispatch_async(dispatch_get_main_queue(), ^{
-            [_delegate webServerDidReadBytes:self bytes:bytesRead];
+            [_delegate webServerDidReadBytes:self bytes:bytesRead total:totalBytes];
         });
     }
 }
