@@ -686,6 +686,7 @@ static inline NSUInteger _ScanHexNumber(const void* bytes, NSUInteger size) {
     _requestFD = 0;
   }
 #endif
+  [_server didReadBytes:_bytesRead];
 }
 
 - (void)didWriteBytes:(const void*)bytes length:(NSUInteger)length {

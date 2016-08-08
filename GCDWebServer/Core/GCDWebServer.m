@@ -808,6 +808,14 @@ static inline NSString* _EncodeBase64(NSString* string) {
 
 @implementation GCDWebServer (Extensions)
 
+- (void) didReadBytes:(NSUInteger)bytesRead {
+    if ([_delegate respondsToSelector:@selector(webServerDidReadBytes:bytes:)]) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [_delegate webServerDidReadBytes:self bytes:bytesRead];
+        });
+    }
+}
+
 - (NSURL*)serverURL {
   if (_source4) {
     NSString* ipAddress = _bindToLocalhost ? @"localhost" : GCDWebServerGetPrimaryIPAddress(NO);  // We can't really use IPv6 anyway as it doesn't work great with HTTP URLs in practice
