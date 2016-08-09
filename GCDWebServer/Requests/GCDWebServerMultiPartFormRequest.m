@@ -383,7 +383,7 @@ static NSData* _dashNewlineData = nil;
 - (BOOL)open:(NSError**)error {
   NSString* boundary = GCDWebServerExtractHeaderValueParameter(self.contentType, @"boundary");
   _parser = [[GCDWebServerMIMEStreamParser alloc] initWithBoundary:boundary defaultControlName:nil arguments:_arguments files:_files processBlock:^(NSString *filename) {
-      if ([_webServer.delegate respondsToSelector:@selector(willProcessFile::)]) {
+      if ([_webServer.delegate respondsToSelector:@selector(willProcessFile:)]) {
           dispatch_async(dispatch_get_main_queue(), ^{
               [_webServer.delegate willProcessFile:filename];
           });
