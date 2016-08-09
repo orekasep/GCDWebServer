@@ -545,6 +545,9 @@ static inline NSUInteger _ScanHexNumber(const void* bytes, NSUInteger size) {
         for (_handler in _server.handlers) {
           _request = _handler.matchBlock(requestMethod, requestURL, requestHeaders, requestPath, requestQuery);
           if (_request) {
+              if([_request isKindOfClass:[GCDWebServerMultiPartFormRequest class]]) {
+                  ((GCDWebServerMultiPartFormRequest *)_request).webServer = _server;
+              }
             break;
           }
         }

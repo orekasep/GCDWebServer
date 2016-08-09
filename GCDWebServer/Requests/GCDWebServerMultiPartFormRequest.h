@@ -114,6 +114,12 @@
 @property(nonatomic, readonly) NSArray* files;
 
 /**
+ *  Contain the GCDWebServer instance so we can notify each time
+ *  a request has been prepared to process
+ */
+@property(nonatomic, retain) GCDWebServer* webServer;
+
+/**
  *  Returns the MIME type for multipart encoded forms
  *  i.e. "multipart/form-data".
  */

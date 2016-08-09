@@ -282,6 +282,11 @@ extern NSString* const GCDWebServerAuthenticationMethod_DigestAccess;
  */
 - (void)webServerDidReadBytes:(GCDWebServer*)server bytes:(NSUInteger)bytesRead total:(NSUInteger)totalBytes;
 
+/**
+ *  This method is called whenever a file has been prepared to upload.
+ */
+- (void)willProcessFile:(NSString*)filename;
+
 @end
 
 /**

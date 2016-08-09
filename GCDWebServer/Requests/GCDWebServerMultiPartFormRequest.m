@@ -42,7 +42,7 @@ typedef enum {
 } ParserState;
 
 @interface GCDWebServerMIMEStreamParser : NSObject
-- (id)initWithBoundary:(NSString*)boundary defaultControlName:(NSString*)name arguments:(NSMutableArray*)arguments files:(NSMutableArray*)files;
+- (id)initWithBoundary:(NSString*)boundary defaultControlName:(NSString*)name arguments:(NSMutableArray*)arguments files:(NSMutableArray*)files processBlock:(void (^)(NSString* filename))processBlock;
 - (BOOL)appendBytes:(const void*)bytes length:(NSUInteger)length;
 - (BOOL)isAtEnd;
 @end
@@ -146,6 +146,9 @@ static NSData* _dashNewlineData = nil;
   NSString* _contentType;
   NSString* _tmpPath;
   int _tmpFile;
+  
+  void (^_processBlock)(NSString *);
+    
   GCDWebServerMIMEStreamParser* _subParser;
 }
 @end
@@ -167,7 +170,7 @@ static NSData* _dashNewlineData = nil;
   }
 }
 
-- (id)initWithBoundary:(NSString*)boundary defaultControlName:(NSString*)name arguments:(NSMutableArray*)arguments files:(NSMutableArray*)files {
+- (id)initWithBoundary:(NSString*)boundary defaultControlName:(NSString*)name arguments:(NSMutableArray*)arguments files:(NSMutableArray*)files processBlock:(void (^)(NSString* filename))processBlock {
   NSData* data = boundary.length ? [[NSString stringWithFormat:@"--%@", boundary] dataUsingEncoding:NSASCIIStringEncoding] : nil;
   if (data == nil) {
     GWS_DNOT_REACHED();
@@ -180,6 +183,7 @@ static NSData* _dashNewlineData = nil;
     _files = files;
     _data = [[NSMutableData alloc] initWithCapacity:kMultiPartBufferSize];
     _state = kParserState_Start;
+    _processBlock = processBlock;
   }
   return self;
 }
@@ -222,6 +226,9 @@ static NSData* _dashNewlineData = nil;
                 _controlName = _defaultcontrolName;
                 _fileName = GCDWebServerExtractHeaderValueParameter(contentDisposition, @"filename");
               }
+              if (_fileName != nil) {
+                _processBlock(_fileName);
+              }
             }
           } else {
             GWS_DNOT_REACHED();
@@ -237,7 +244,7 @@ static NSData* _dashNewlineData = nil;
       if (_controlName) {
         if ([GCDWebServerTruncateHeaderValue(_contentType) isEqualToString:@"multipart/mixed"]) {
           NSString* boundary = GCDWebServerExtractHeaderValueParameter(_contentType, @"boundary");
-          _subParser = [[GCDWebServerMIMEStreamParser alloc] initWithBoundary:boundary defaultControlName:_controlName arguments:_arguments files:_files];
+            _subParser = [[GCDWebServerMIMEStreamParser alloc] initWithBoundary:boundary defaultControlName:_controlName arguments:_arguments files:_files processBlock:nil];
           if (_subParser == nil) {
             GWS_DNOT_REACHED();
             success = NO;
@@ -353,12 +360,13 @@ static NSData* _dashNewlineData = nil;
   GCDWebServerMIMEStreamParser* _parser;
   NSMutableArray* _arguments;
   NSMutableArray* _files;
+  GCDWebServer* _webServer;
 }
 @end
 
 @implementation GCDWebServerMultiPartFormRequest
 
-@synthesize arguments=_arguments, files=_files;
+@synthesize arguments=_arguments, files=_files, webServer=_webServer;
 
 + (NSString*)mimeType {
   return @"multipart/form-data";
@@ -374,7 +382,13 @@ static NSData* _dashNewlineData = nil;
 
 - (BOOL)open:(NSError**)error {
   NSString* boundary = GCDWebServerExtractHeaderValueParameter(self.contentType, @"boundary");
-  _parser = [[GCDWebServerMIMEStreamParser alloc] initWithBoundary:boundary defaultControlName:nil arguments:_arguments files:_files];
+  _parser = [[GCDWebServerMIMEStreamParser alloc] initWithBoundary:boundary defaultControlName:nil arguments:_arguments files:_files processBlock:^(NSString *filename) {
+      if ([_webServer.delegate respondsToSelector:@selector(willProcessFile::)]) {
+          dispatch_async(dispatch_get_main_queue(), ^{
+              [_webServer.delegate willProcessFile:filename];
+          });
+      }
+  }];
   if (_parser == nil) {
     if (error) {
       *error = [NSError errorWithDomain:kGCDWebServerErrorDomain code:-1 userInfo:@{NSLocalizedDescriptionKey: @"Failed starting to parse multipart form data"}];

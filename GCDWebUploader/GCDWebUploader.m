@@ -167,12 +167,7 @@
   if ((!_allowHidden && [file.fileName hasPrefix:@"."]) || ![self _checkFileExtension:file.fileName]) {
     return [GCDWebServerErrorResponse responseWithClientError:kGCDWebServerHTTPStatusCode_Forbidden message:@"Uploaded file name \"%@\" is not allowed", file.fileName];
   }
-    
-  if ([self.delegate respondsToSelector:@selector(webUploader:willDownloadFile:)]) {
-    dispatch_async(dispatch_get_main_queue(), ^{
-      [self.delegate webUploader:self willDownloadFile:file.fileName];
-    });
-  }
+
     
   NSString* relativePath = [[request firstArgumentForControlName:@"path"] string];
   NSString* absolutePath = [self _uniquePathForPath:[[_uploadDirectory stringByAppendingPathComponent:relativePath] stringByAppendingPathComponent:file.fileName]];
